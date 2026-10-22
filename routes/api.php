@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\Api\TakeawayOrderController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -43,3 +44,13 @@ Route::post('/categories', [CategoryController::class, 'store']);
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
 Route::put('/categories/{id}', [CategoryController::class, 'update']);
 Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+
+
+
+// Route For Take_away //
+
+Route::get('/takeaway-orders', [TakeawayOrderController::class, 'index']);
+Route::post('/takeaway-orders', [TakeawayOrderController::class, 'store']);
+Route::get('/takeaway-orders/{id}', [TakeawayOrderController::class, 'show']);
+Route::put('/takeaway-orders/{id}', [TakeawayOrderController::class, 'update']);
+Route::delete('/takeaway-orders/{id}', [TakeawayOrderController::class, 'destroy']);
