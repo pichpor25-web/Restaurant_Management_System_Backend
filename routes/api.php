@@ -9,11 +9,17 @@ use App\Http\Controllers\Api\OrderItemController;
 use App\Http\Controllers\Api\MenuItemController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Api\TakeawayOrderController;
 
 // Public Authentication Endpoints
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:auth');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:auth');
+
+
+Route::get('/user', function (Request $request) {
+    return $request->user();
+})->middleware('auth:sanctum');
+
 
 
 // Authenticated Endpoints
@@ -70,7 +76,20 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/order-items/{id}', [OrderItemController::class, 'show']);
     Route::put('/order-items/{id}', [OrderItemController::class, 'update']);
     Route::delete('/order-items/{id}', [OrderItemController::class, 'destroy']);
+
+    
+// Route For Take_away //
+
+Route::get('/takeaway-orders', [TakeawayOrderController::class, 'index']);
+Route::post('/takeaway-orders', [TakeawayOrderController::class, 'store']);
+Route::get('/takeaway-orders/{id}', [TakeawayOrderController::class, 'show']);
+Route::put('/takeaway-orders/{id}', [TakeawayOrderController::class, 'update']);
+Route::delete('/takeaway-orders/{id}', [TakeawayOrderController::class, 'destroy']);
+
 });
+
+
+
 
 
 
