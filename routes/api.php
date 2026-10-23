@@ -10,8 +10,11 @@ use App\Http\Controllers\Api\MenuItemController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TakeawayOrderController;
+use App\Http\Controllers\Api\DineInOrderController;
 
 // Public Authentication Endpoints
+
+
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:auth');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:auth');
 
@@ -85,6 +88,13 @@ Route::post('/takeaway-orders', [TakeawayOrderController::class, 'store']);
 Route::get('/takeaway-orders/{id}', [TakeawayOrderController::class, 'show']);
 Route::put('/takeaway-orders/{id}', [TakeawayOrderController::class, 'update']);
 Route::delete('/takeaway-orders/{id}', [TakeawayOrderController::class, 'destroy']);
+//Route For Dine_In//
+
+Route::get('/dine-in-orders', [DineInOrderController::class, 'index']);
+Route::post('/dine-in-orders', [DineInOrderController::class, 'store']);
+Route::get('/dine-in-orders/{id}', [DineInOrderController::class, 'show']);
+Route::put('/dine-in-orders/{id}', [DineInOrderController::class, 'update']);
+Route::delete('/dine-in-orders/{id}', [DineInOrderController::class, 'destroy']);
 
 });
 
