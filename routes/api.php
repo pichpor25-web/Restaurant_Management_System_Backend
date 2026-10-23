@@ -1,17 +1,20 @@
 <?php
-
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\InventoryItemController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\RestaurantTableController;
+use App\Http\Controllers\Api\OrderItemController;
+use App\Http\Controllers\Api\MenuItemController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
 // Public Authentication Endpoints
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:auth');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:auth');
+
 
 // Authenticated Endpoints
 Route::middleware('auth:sanctum')->group(function (): void {
@@ -53,4 +56,22 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::match(['put', 'patch'], '/inventory/{id}', [InventoryItemController::class, 'update']);
     Route::delete('/inventory/{id}', [InventoryItemController::class, 'destroy']);
     Route::post('/inventory/{id}/adjust', [InventoryItemController::class, 'adjustStock']);
+
+        // Menu Items
+    Route::get('/menu-items', [MenuItemController::class, 'index']);
+    Route::post('/menu-items', [MenuItemController::class, 'store']);
+    Route::get('/menu-items/{id}', [MenuItemController::class, 'show']);
+    Route::put('/menu-items/{id}', [MenuItemController::class, 'update']);
+    Route::delete('/menu-items/{id}', [MenuItemController::class, 'destroy']);
+
+    // Order Items
+    Route::get('/order-items', [OrderItemController::class, 'index']);
+    Route::post('/order-items', [OrderItemController::class, 'store']);
+    Route::get('/order-items/{id}', [OrderItemController::class, 'show']);
+    Route::put('/order-items/{id}', [OrderItemController::class, 'update']);
+    Route::delete('/order-items/{id}', [OrderItemController::class, 'destroy']);
 });
+
+
+
+
