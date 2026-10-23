@@ -45,17 +45,13 @@ class PaymentController extends Controller
             ->first();
 
         if ($pendingPayment) {
-            if (!empty($pendingPayment->qr_payload)) {
-                return response()->json([
-                    'order_id' => $order->id,
-                    'order_number' => $order->order_number,
-                    'amount' => $pendingPayment->amount,
-                    'qr' => $pendingPayment->qr_payload,
-                    'md5' => $pendingPayment->transaction_reference,
+            // Replace pending payloads so refreshed checkouts use the current merchant settings and QR format.
+            DB::table('payments')
+                ->where('id', $pendingPayment->id)
+                ->update([
+                    'status' => 'expired',
+                    'updated_at' => Carbon::now(),
                 ]);
-            }
-
-            return response()->json(['message' => 'A payment is already pending for this order'], 409);
         }
 
         // 2. Prepare Merchant Information
@@ -63,8 +59,9 @@ class PaymentController extends Controller
             bakongAccountID: env('BAKONG_ACCOUNT_ID', 'sem_bunly@bkrt'),
             merchantName: env('BAKONG_MERCHANT_NAME', 'BUNLY SEM'),
             merchantCity: env('BAKONG_MERCHANT_CITY', 'Phnom Penh'),
-            currency: KHQRData::CURRENCY_USD, // or KHQRData::CURRENCY_KHR
-            amount: (float) $order->total
+            currency: KHQRData::CURRENCY_USD,
+            amount: (float) $order->total,
+            expirationTimestamp: (string) ((int) round(microtime(true) * 1000) + 15 * 60 * 1000),
         );
 
         // 3. Generate QR and MD5 Hash
@@ -73,8 +70,8 @@ class PaymentController extends Controller
         $qrString = $qrResponse->data['qr'] ?? null;
         $md5Hash  = $qrResponse->data['md5'] ?? null;
 
-        if (!$qrString || !$md5Hash) {
-            return response()->json(['message' => 'Failed to generate Bakong KHQR'], 500);
+        if (!$qrString || !$md5Hash || !BakongKHQR::verify($qrString)->isValid) {
+            return response()->json(['message' => 'Failed to generate a valid Bakong KHQR'], 500);
         }
 
         $md5Hash = strtolower($md5Hash);

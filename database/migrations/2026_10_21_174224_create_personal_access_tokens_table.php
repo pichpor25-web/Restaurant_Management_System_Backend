@@ -6,12 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('personal_access_tokens', function (Blueprint $table) {
+        // The earlier Sanctum migration creates this table.
+        if (Schema::hasTable('personal_access_tokens')) {
+            return;
+        }
+
+        Schema::create('personal_access_tokens', function (Blueprint $table): void {
             $table->id();
             $table->morphs('tokenable');
             $table->text('name');
@@ -23,11 +25,8 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('personal_access_tokens');
+        // The earlier Sanctum migration owns this table.
     }
 };

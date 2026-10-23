@@ -6,12 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('orders', function (Blueprint $table) {
+        // Orders are created by the earlier ensure_orders_table_exists migration.
+        if (Schema::hasTable('orders')) {
+            return;
+        }
+
+        Schema::create('orders', function (Blueprint $table): void {
             $table->id();
             $table->string('order_number', 30)->unique();
             $table->foreignId('user_id')->nullable()
@@ -27,11 +29,8 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('orders');
+        // The earlier migration owns the orders table.
     }
 };
