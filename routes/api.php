@@ -3,7 +3,7 @@
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\OrderItemController;
 use App\Http\Controllers\Api\MenuItemController;
-use App\Http\Controllers\Api\CategoryController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -35,11 +35,3 @@ Route::get('/order-items/{id}', [OrderItemController::class, 'show']);
 Route::put('/order-items/{id}', [OrderItemController::class, 'update']);
 Route::delete('/order-items/{id}', [OrderItemController::class, 'destroy']);
 
-// Route For Category //
-
-
-Route::get('/categories', [CategoryController::class, 'index']);
-Route::post('/categories', [CategoryController::class, 'store']);
-Route::get('/categories/{id}', [CategoryController::class, 'show']);
-Route::put('/categories/{id}', [CategoryController::class, 'update']);
-Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
