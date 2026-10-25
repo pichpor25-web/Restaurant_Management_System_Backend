@@ -56,8 +56,8 @@ class PaymentController extends Controller
 
         // 2. Prepare Merchant Information
         $merchant = new IndividualInfo(
-            bakongAccountID: env('BAKONG_ACCOUNT_ID', 'sem_bunly@bkrt'),
-            merchantName: env('BAKONG_MERCHANT_NAME', 'BUNLY SEM'),
+            bakongAccountID: env('BAKONG_ACCOUNT_ID', 'bora_pen@bkrt'),
+            merchantName: env('BAKONG_MERCHANT_NAME', 'Bora Pen'),
             merchantCity: env('BAKONG_MERCHANT_CITY', 'Phnom Penh'),
             currency: KHQRData::CURRENCY_USD,
             amount: (float) $order->total,
