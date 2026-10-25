@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TakeawayOrderController;
 use App\Http\Controllers\Api\DineInOrderController;
-
+use App\Http\Controllers\Api\CheckoutController;
 // Public Authentication Endpoints
 
 
@@ -39,12 +39,14 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
 
     // Bakong KHQR Payments
+    Route::get('/payments', [PaymentController::class, 'index']);
     Route::post('/payments/bakong/checkout/{orderId}', [PaymentController::class, 'checkout'])
         ->whereNumber('orderId');
     Route::post('/payments/bakong/verify', [PaymentController::class, 'verifyTransaction']);
+    
 
     // Categories
-    Route::get('/categories', [CategoryController::class, 'index']);
+    
     Route::post('/categories', [CategoryController::class, 'store']);
     Route::get('/categories/{id}', [CategoryController::class, 'show']);
     Route::match(['put', 'patch'], '/categories/{id}', [CategoryController::class, 'update']);
@@ -67,7 +69,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/inventory/{id}/adjust', [InventoryItemController::class, 'adjustStock']);
 
         // Menu Items
-    Route::get('/menu-items', [MenuItemController::class, 'index']);
+   
     Route::post('/menu-items', [MenuItemController::class, 'store']);
     Route::get('/menu-items/{id}', [MenuItemController::class, 'show']);
     Route::put('/menu-items/{id}', [MenuItemController::class, 'update']);
@@ -97,6 +99,15 @@ Route::put('/dine-in-orders/{id}', [DineInOrderController::class, 'update']);
 Route::delete('/dine-in-orders/{id}', [DineInOrderController::class, 'destroy']);
 
 });
+// for Customer
+
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/menu-items', [MenuItemController::class, 'index']);
+Route::post('/checkout', [CheckoutController::class, 'store'])->middleware('throttle:20,1');
+Route::post('/payments/bakong/checkout/{orderId}', [PaymentController::class, 'checkout'])
+    ->whereNumber('orderId')->middleware('throttle:20,1');
+Route::post('/payments/bakong/verify', [PaymentController::class, 'verifyTransaction'])
+    ->middleware('throttle:30,1');
 
 
 

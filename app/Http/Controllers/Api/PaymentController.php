@@ -21,6 +21,10 @@ class PaymentController extends Controller
      * 1. Generate Bakong KHQR for an Order (Matching your checkout function)
      * POST /api/v1/payments/bakong/checkout/{orderId}
      */
+    public function index()
+{
+    return response()->json(DB::table('payments')->orderByDesc('id')->paginate(50));
+}
     public function checkout(int $orderId): JsonResponse
     {
         // 1. Fetch Order
