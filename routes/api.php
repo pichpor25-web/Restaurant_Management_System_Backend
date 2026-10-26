@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TakeawayOrderController;
 use App\Http\Controllers\Api\DineInOrderController;
 use App\Http\Controllers\Api\CheckoutController;
+use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\ReportController; 
 // Public Authentication Endpoints
 
 
@@ -30,7 +32,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
     // User Profile & Logout
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
-
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::post('/profile/update', [ProfileController::class, 'update']);
+    Route::post('/profile/update-password', [ProfileController::class, 'updatePassword']);
     // Orders
     Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/orders', [OrderController::class, 'store']);
@@ -63,9 +67,10 @@ Route::middleware('auth:sanctum')->group(function (): void {
     // Inventory Items & Stock Adjustments
     Route::get('/inventory', [InventoryItemController::class, 'index']);
     Route::post('/inventory', [InventoryItemController::class, 'store']);
-    Route::get('/inventory/{id}', [InventoryItemController::class, 'show']);
-    Route::match(['put', 'patch'], '/inventory/{id}', [InventoryItemController::class, 'update']);
+    Route::put('/inventory/{id}', [InventoryItemController::class, 'update']);
     Route::delete('/inventory/{id}', [InventoryItemController::class, 'destroy']);
+    
+    // សម្រាប់ការកែសម្រួល Stock (Stock In / Out)
     Route::post('/inventory/{id}/adjust', [InventoryItemController::class, 'adjustStock']);
 
         // Menu Items
@@ -97,6 +102,8 @@ Route::post('/dine-in-orders', [DineInOrderController::class, 'store']);
 Route::get('/dine-in-orders/{id}', [DineInOrderController::class, 'show']);
 Route::put('/dine-in-orders/{id}', [DineInOrderController::class, 'update']);
 Route::delete('/dine-in-orders/{id}', [DineInOrderController::class, 'destroy']);
+
+   Route::get('/reports/summary', [ReportController::class, 'summary']);
 
 });
 // for Customer
