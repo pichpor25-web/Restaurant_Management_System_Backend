@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -106,7 +107,7 @@ class PaymentController extends Controller
      * 2. Verify Transaction with NBC Bakong API (Matching your verifyTransaction function)
      * POST /api/v1/payments/bakong/verify
      */
-    public function verifyTransaction(Request $request): JsonResponse
+    public function verifyTransaction(Request $request, TelegramService $telegram): JsonResponse
     {
         $validated = $request->validate([
             'md5' => ['required', 'string', 'regex:/^[a-fA-F0-9]{32}$/'],
@@ -138,14 +139,14 @@ class PaymentController extends Controller
             if (isset($result['responseCode']) && (int) $result['responseCode'] === 0) {
                 $now = Carbon::now();
 
-                DB::transaction(function () use ($md5, $now): void {
+                $orderId = DB::transaction(function () use ($md5, $now): ?int {
                     $lockedPayment = DB::table('payments')
                         ->where('transaction_reference', $md5)
                         ->lockForUpdate()
                         ->first();
 
                     if (!$lockedPayment || $lockedPayment->status === 'paid') {
-                        return;
+                        return null;
                     }
 
                     DB::table('payments')->where('id', $lockedPayment->id)->update([
@@ -168,7 +169,26 @@ class PaymentController extends Controller
                             ]);
                         }
                     }
+
+                    return (int) $lockedPayment->order_id;
                 });
+
+                if ($orderId !== null) {
+                    $order = DB::table('orders')->where('id', $orderId)->first();
+
+                    if ($order) {
+                        $orderNumber = e((string) $order->order_number);
+                        $orderType = e(ucwords(str_replace('_', ' ', (string) $order->order_type)));
+
+                        $telegram->sendMessage(
+                            "<b>Payment received</b>\n\n"
+                            . "<b>Order:</b> #{$orderNumber}\n"
+                            . "<b>Type:</b> {$orderType}\n"
+                            . "<b>Amount:</b> $" . number_format((float) $order->total, 2) . "\n"
+                            . "<b>Paid at:</b> " . $now->format('d M Y, h:i A'),
+                        );
+                    }
+                }
 
                 return response()->json([
                     'paid'    => true,
