@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\DineInOrderController;
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ReportController; 
+use App\Http\Controllers\Api\SalesReportExport;
+
 // Public Authentication Endpoints
 
 
@@ -104,6 +106,8 @@ Route::put('/dine-in-orders/{id}', [DineInOrderController::class, 'update']);
 Route::delete('/dine-in-orders/{id}', [DineInOrderController::class, 'destroy']);
 
    Route::get('/reports/summary', [ReportController::class, 'summary']);
+   Route::get('/reports/download-pdf', [ReportController::class, 'downloadPdf']);
+   Route::get('/reports/download-excel', [ReportController::class, 'downloadExcel']);
 
 });
 // for Customer

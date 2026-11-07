@@ -9,10 +9,8 @@ use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
-    private const TAX_RATE = 0.10;
-    private const SERVICE_FEE = 2.99; // dine-in only
+    // លុប TAX_RATE និង SERVICE_FEE ចេញ
 
-    // POST /api/checkout   (public + throttled)
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -22,6 +20,7 @@ class CheckoutController extends Controller
             'items.*.quantity' => 'required|integer|min:1|max:50',
             'customer_name' => 'required_if:order_type,takeaway|nullable|string|max:100',
             'customer_phone' => 'required_if:order_type,takeaway|nullable|string|max:20',
+            'table_id' => 'required_if:order_type,dine_in|nullable|integer|exists:restaurant_tables,id', 
         ]);
 
         return DB::transaction(function () use ($data) {
@@ -30,7 +29,6 @@ class CheckoutController extends Controller
                 ->get()
                 ->keyBy('id');
 
-            // Prices come from the database, never from the client
             $subtotal = 0;
             $lines = [];
             foreach ($data['items'] as $item) {
@@ -46,19 +44,21 @@ class CheckoutController extends Controller
             }
 
             $isDineIn = $data['order_type'] === 'dine_in';
-            $tax = round($subtotal * self::TAX_RATE, 2);
-            $total = round($subtotal + ($isDineIn ? self::SERVICE_FEE : 0) + $tax, 2);
+            
+            // កែត្រង់នេះ៖ ដក Tax និង Service ចេញ
+            $tax = 0;
+            $total = round($subtotal, 2); // Total ស្មើ Subtotal តែម្តង
 
-            // Atomically claim a free table (no two customers get the same one)
             $table = null;
             if ($isDineIn) {
                 $table = DB::table('restaurant_tables')
+                    ->where('id', $data['table_id'])
                     ->where('status', 'available')
                     ->lockForUpdate()
                     ->first();
 
                 if (!$table) {
-                    abort(409, 'No free table right now');
+                    abort(409, 'Selected table is no longer available'); 
                 }
 
                 DB::table('restaurant_tables')->where('id', $table->id)
@@ -71,8 +71,8 @@ class CheckoutController extends Controller
                 'status' => 'pending',
                 'subtotal' => round($subtotal, 2),
                 'discount' => 0,
-                'tax' => $tax,
-                'total' => $total,
+                'tax' => $tax, // ដាក់ 0
+                'total' => $total, // ដាក់ត្រឹមតែ subtotal
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

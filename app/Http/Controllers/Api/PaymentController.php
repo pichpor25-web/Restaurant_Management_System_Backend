@@ -160,15 +160,7 @@ class PaymentController extends Controller
                         'updated_at' => $now,
                     ]);
 
-                    if (Schema::hasTable('dine_in_orders')) {
-                        $dineIn = DB::table('dine_in_orders')->where('order_id', $lockedPayment->order_id)->first();
-                        if ($dineIn && isset($dineIn->table_id)) {
-                            DB::table('restaurant_tables')->where('id', $dineIn->table_id)->update([
-                                'status' => 'available',
-                                'updated_at' => $now,
-                            ]);
-                        }
-                    }
+                   
 
                     return (int) $lockedPayment->order_id;
                 });

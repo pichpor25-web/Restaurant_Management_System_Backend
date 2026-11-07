@@ -68,24 +68,15 @@ class OrderController extends Controller
     }
 
     // PUT /api/orders/{id}
-    public function update(Request $request, string $id)
+     public function update(Request $request, string $id)
     {
-        $exists = DB::table($this->table)
-            ->where('id', $id)
-            ->exists();
-
+        $exists = DB::table($this->table)->where('id', $id)->exists();
         if (!$exists) {
             return response()->json(['message' => 'Order not found'], 404);
         }
 
         $data = $request->validate([
-            'order_number' => [
-                'sometimes',
-                'required',
-                'string',
-                'max:30',
-                Rule::unique('orders', 'order_number')->ignore($id),
-            ],
+            'order_number' => ['sometimes','required','string','max:30', Rule::unique('orders', 'order_number')->ignore($id)],
             'user_id' => 'sometimes|nullable|integer|exists:users,id',
             'order_type' => 'sometimes|required|in:dine_in,takeaway,delivery',
             'status' => 'sometimes|nullable|string|max:30',
@@ -98,13 +89,19 @@ class OrderController extends Controller
 
         $data['updated_at'] = now();
 
-        DB::table($this->table)
-            ->where('id', $id)
-            ->update($data);
+        DB::table($this->table)->where('id', $id)->update($data);
 
-        $order = DB::table($this->table)
-            ->where('id', $id)
-            ->first();
+        $order = DB::table($this->table)->where('id', $id)->first();
+
+     
+        if ($order->order_type === 'dine_in' && in_array($order->status, ['cancelled', 'completed'])) {
+            $dineIn = DB::table('dine_in_orders')->where('order_id', $order->id)->first();
+            if ($dineIn && $dineIn->table_id) {
+                DB::table('restaurant_tables')
+                    ->where('id', $dineIn->table_id)
+                    ->update(['status' => 'available', 'updated_at' => now()]);
+            }
+        }
 
         return response()->json($order);
     }
